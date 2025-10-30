@@ -50,26 +50,28 @@ class EmployeeBillController extends Controller
             'vehicle_type' => 'required|string|max:255',
             'license_plate' => 'nullable|string|max:255',
             'customer_momo' => 'required|string|max:20',
-            'services' => 'nullable|array',
+            'services' => 'nullable|string|max:500',
             'total_amount' => 'required|numeric|min:0',
             'status' => 'required|in:pending,in_progress,completed,cancelled',
             'notes' => 'nullable|string|max:500',
         ]);
 
-        $user = $bill->user_id ? User::find($bill->user_id) : null;
-        $position = $user->position;
-        $percentage = $position->salary_percentage ?? 0;
+        // Giữ nguyên phần trăm cũ đã lưu
+        $percentage = $bill->percentage ?? 0;
+
+        // Tính lại tiền nhân viên theo tổng tiền mới và phần trăm cũ
         $employeeEarnings = ($validated['total_amount'] * $percentage) / 100;
 
         $bill->update([
             'vehicle_type' => $validated['vehicle_type'],
             'license_plate' => $validated['license_plate'] ?? null,
             'customer_momo' => $validated['customer_momo'],
-            'services' => json_encode($validated['services'] ?? []),
+            'services' => $validated['services'],
             'total_amount' => $validated['total_amount'],
             'employee_earnings' => $employeeEarnings,
             'status' => $validated['status'],
             'notes' => $validated['notes'] ?? null,
+            // Không cập nhật percentage để giữ nguyên tỉ lệ cũ
         ]);
 
         ActivityLogger::admin($request->user()->real_name . ' sửa hóa đơn ' . $bill->bill_code, $bill, $bill->toArray());

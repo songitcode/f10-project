@@ -17,8 +17,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             PositionSeeder::class,
             AdminUserSeeder::class,
-            RepairBillSeeder::class,
             EmployeeSeeder::class,
+            RepairBillSeeder::class,
         ]);
     }
 }

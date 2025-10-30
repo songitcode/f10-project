@@ -7,6 +7,12 @@
     <title>F10 Auto Repair - @yield('title', 'Trang Nhân Viên')</title>
 
     <link rel="shortcut icon" href="{{ asset('assets/images/f10-auto-repair-logo.png') }}" type="image/x-icon">
+    <!-- GG Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=BBH+Sans+Bogle&family=Caprasimo&family=Lilita+One&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
 
     @if (!View::hasSection('hide_bootstrap'))
         <!-- Bootstrap CSS -->
@@ -37,12 +43,14 @@
     @endif
 
     {{-- Hiển thị thông báo --}}
-    <div class="notifications">
-        <span id="session-success" data-message="{{ session('success') }}"></span>
-        <span id="session-warning" data-message="{{ session('warning') }}"></span>
-        <span id="session-info" data-message="{{ session('info') }}"></span>
-        <span id="session-error" data-message="{{ session('error') }}"></span>
-    </div>
+    @if (!View::hasSection('hide_notifications'))
+        <div class="notifications">
+            <span id="session-success" data-message="{{ session('success') }}"></span>
+            <span id="session-warning" data-message="{{ session('warning') }}"></span>
+            <span id="session-info" data-message="{{ session('info') }}"></span>
+            <span id="session-error" data-message="{{ session('error') }}"></span>
+        </div>
+    @endif
 
     <!-- Bootstrap JS Bundle (includes Popper) -->
     <script src="{{ asset('assets/bootstrap-5.3.7-dist/js/bootstrap.bundle.min.js') }}"></script>

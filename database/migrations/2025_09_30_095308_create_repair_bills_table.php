@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->text('services'); // Dịch vụ sửa chữa
             $table->decimal('total_amount', 12, 2); // Tổng tiền
             $table->decimal('employee_earnings', 12, 2); // Tiền nhân viên nhận
+            $table->decimal('percentage', 5, 2)->default(0); 
             $table->string('status')->default('pending'); // Trạng thái
             $table->text('notes')->nullable(); // Ghi chú
             $table->timestamps();
