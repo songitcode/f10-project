@@ -9,13 +9,14 @@
 @section('hide_footer')@endsection
 @section('hide_navbar')@endsection
 @section('hide_main_css')@endsection
+@section('hide_notifications')@endsection
 
 @section('content')
     <nav class="mobile-navbar">
         <div class="navbar-brand">
             <!-- <i class="fas fa-users-cog"></i> -->
              <img src="{{ asset('assets/images/f10-auto-repair-logo.png') }}" alt="" width="50" height="50">
-             F10 HR
+             <span class="caprasimo-regular">F10 Auto (HR)</span>
         </div>
         <button class="navbar-toggler" id="sidebarToggle">
             <i class="fas fa-bars"></i>
@@ -25,9 +26,11 @@
     <div class="row">
         <!-- Sidebar -->
         <div class="col-lg-2 sidebar" id="sidebar">
-            <div class="text-center mb-4">
-                <h3><img src="{{ asset('assets/images/f10-auto-repair-logo.png') }}" alt="" width="100" height="100"> F10 HR</h3>
+            <div class="text-center">
+                <img src="{{ asset('assets/images/f10-auto-repair-logo.png') }}" alt="" width="100" height="100">
+                <span class="caprasimo-regular h5">F10 Auto</span>
             </div>
+            <hr>
             <ul class="nav flex-column">
                 <li><a href="#" class="active" data-tab="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 </li>
@@ -35,10 +38,26 @@
                 <li><a href="#" data-tab="position-management"><i class="fas fa-briefcase"></i> Quản lý chức vụ</a></li>
                 <li><a href="#" data-tab="role-management"><i class="fas fa-user-shield"></i> Danh sách quyền hạng</a></li>
                 <li><a href="#" data-tab="repair-bills-management"><i class="fas fa-tools"></i> Quản lý hóa đơn</a></li>
+                <li><a href="#" data-tab="voucher-tab-management"><i class="fas fa-ticket"></i> Quản lý Voucher</a></li>
+                <li><a href="#" data-tab="work-schedule"><i class="fas fa-calendar"></i> Lịch làm việc</a></li>
                 <li><a href="#" data-tab="reports"><i class="fas fa-chart-bar"></i> Báo cáo</a></li>
-                <li><a href="#" data-tab="work-schedule"><i class="fas fa-calendar"></i> Quản Lý Lịch Làm Việc</a></li>
-                <li><a href="#" data-tab="logs"><i class="fas fa-history"></i> LOG Quản lý</a></li>
-                <li><a href="#" data-tab="logs-user"><i class="fas fa-history"></i> LOG Nhân viên</a></li>
+                <hr>
+                <li><a href="#" data-tab="logs"><i class="fas fa-history"></i>Lịch Sử Quản lý</a></li>
+                <li><a href="#" data-tab="logs-user"><i class="fas fa-timeline"></i>Lịch Sử Nhân viên</a></li>
+                <hr>
+                <li>
+                    <a href="{{ route('home') }}" class="btn-user-home btn-nav" title="Quay về trang User" data-bs-toggle="tooltip">
+                        <i class="fas fa-home"></i> Trang chủ
+                    </a>
+                </li>
+                 <li>
+                    <a 
+                    class="btn-nav btn-admin-logout" 
+                    href="{{ route('logout') }}" 
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                    </a>
+                </li>
             </ul>
         </div>
 
@@ -268,8 +287,8 @@
             <div id="employee-management" class="tab-content">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="stats-employee d-flex">
-                        <p>Total Emps: <strong>{{ $stats['total_employees'] ?? 0 }}</strong> -</p>
-                        <p> New Emps (month: {{ now()->subMonth()->format('m') }}, {{ now()->subMonth()->format('m') + 1}}): <strong>{{ $stats['new_employees'] ?? 0 }}</strong></p>
+                        <p>Tổng nhân viên: <strong>{{ $stats['total_employees'] ?? 0 }}</strong> - </p>
+                        <p> Nhân viên mới (tháng: {{ now()->subMonth()->format('m') }}, {{ now()->subMonth()->format('m') + 1}}): <strong>{{ $stats['new_employees'] ?? 0 }}</strong></p>
                     </div>
                     @if (auth()->user()->isQuanLyNhanSu())
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
@@ -323,7 +342,7 @@
                                                 {{--<div class="d-flex align-items-center">
                                                     <img src="https://ui-avatars.com/api/?name={{ urlencode($employee->real_name) }}&background=random"
                                                         class="employee-photo me-2" alt="{{ $employee->real_name }}">
-                                                </div> --}}
+                                                </div>--}}
                                                 {{ $employee->real_name }}
                                             </td>
                                             <td>{{ $employee->ingame_name }}</td>
@@ -676,14 +695,17 @@
                             <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Mã HD</th>
-                                        <th>Bill Code</th>
+                                        <th>#</th>
+                                        <th>ID</th>
+                                        <th>Mã hóa đơn</th>
                                         <th>Nhân viên</th>
                                         <th>Momo KH</th>
                                         <th>Loại xe</th>
                                         <th>Biển số</th>
                                         <th>Dịch vụ</th>
-                                        <th>Tổng tiền</th>
+                                        <th>Tiền hóa đơn</th>
+                                        <th>Hoa hồng</th>
+                                        <th>Tiền nhận được</th>
                                         <th>Trạng thái</th>
                                         <th>Ngày tạo</th>
                                         <th>Thao tác</th>
@@ -691,11 +713,9 @@
                                 </thead>
                                 <tbody>
                                     @foreach($repairBills as $bill)
-                                        @php
-                                            $services = json_decode($bill->services, true);
-                                        @endphp
                                         <tr>
-                                            <td>HD{{ str_pad($bill->id, 6, '0', STR_PAD_LEFT) }}</td>
+                                            <td>{{$loop->iteration }}</td>
+                                            <td>#{{$bill->id }}</td>
                                             <td>{{ $bill->bill_code }}</td>
                                             <td>
                                                 <div class="d-flex align-items-center">
@@ -709,21 +729,15 @@
                                             <td>{{ $bill->vehicle_type }}</td>
                                             <td>{{ $bill->license_plate ?? 'N/A' }}</td>
                                             <td>
-                                                {{--
-                                                <span class="d-inline-block text-truncate" style="max-width: 200px;"
+                                                <span class="d-inline-block text-truncate" style="max-width: 300px;"
                                                     data-bs-toggle="tooltip" title="{{ $bill->services }}">
                                                     {{ $bill->services }}
                                                 </span>
-                                                --}}
-                                                @foreach($services as $service)
-                                                    <span class="badge bg-primary me-1">
-                                                        <i class="bi bi-tools"></i> {{ $service }}
-                                                    </span>
-                                                @endforeach
                                             </td>
-                                            <td>
-                                                <strong class="text-success">{{ number_format($bill->total_amount) }}$</strong>
-                                            </td>
+                                            <td><strong>{{ number_format($bill->total_amount) }}$</strong></td>
+                                            <!-- <td><strong class="text-primary">{{ number_format($bill->user->position->salary_percentage, 0) }}%</strong></td> -->
+                                            <td><strong class="text-primary">{{ number_format($bill->percentage) }}%</strong></td>
+                                            <td><strong class="text-success">{{ number_format($bill->employee_earnings, 0) }}$</strong></td>
                                             <td>
                                                 @if($bill->status == 'pending')
                                                     <span class="badge bg-warning">Chờ duyệt</span>
@@ -829,28 +843,28 @@
                     <div class="col-md-3">
                         <div class="card stats-card bg-primary text-white">
                             <i class="fas fa-money-bill-wave"></i>
-                            <h3>{{ number_format($reportStats['total_revenue'] ?? 0) }}₫</h3>
-                            <p>Tổng doanh thu</p>
+                            <h3>{{ number_format($stats['monthly_revenue'] ?? 0) }}$</h3>
+                            <p>Tổng doanh thu (tháng {{ $stats['layThangHienTai'] }})</p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card stats-card bg-success text-white">
                             <i class="fas fa-receipt"></i>
-                            <h3>{{ $reportStats['total_bills'] ?? 0 }}</h3>
+                            <h3>{{ $stats['total_bills'] ?? 0 }}</h3>
                             <p>Tổng hóa đơn</p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card stats-card bg-info text-white">
                             <i class="fas fa-users"></i>
-                            <h3>{{ $reportStats['active_employees'] ?? 0 }}</h3>
+                            <h3>{{ $stats['nhanVienDangHoatDong'] ?? 0 }}</h3>
                             <p>Nhân viên hoạt động</p>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="card stats-card bg-warning text-white">
                             <i class="fas fa-chart-line"></i>
-                            <h3>{{ $reportStats['completion_rate'] ?? 0 }}%</h3>
+                            <h3>{{ $stats['pending_bills'] / 100 ?? 0 }}%</h3>
                             <p>Tỷ lệ hoàn thành</p>
                         </div>
                     </div>
@@ -944,10 +958,127 @@
                     </div>
                 </div>
             </div>
+            <!-- voucher tab bảo hiểm tab -->
+             <div id="voucher-tab-management" class="tab-content active">
+                <div class="h1">VOUCHER</div>
+             </div>
             <!-- Work schedule Tab -->
-            <div id="work-schedule" class="tab-content">
+            <div id="work-schedule" class="tab-content active">
                 <div class="card">
-                    Lịch làm việc
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <form action="{{ route('hr-lich-lam-viec.store') }}" method="POST" class="d-flex gap-2">
+                            @csrf
+                            <select name="user_id" class="form-select" required>
+                                <option value="">-- Chọn nhân viên --</option>
+                                @foreach ($usersWorkSchedule as $user)
+                                    <option value="{{ $user->id }}">{{ $user->real_name }} ({{ $user->name }})</option>
+                                @endforeach
+                            </select>
+                            <input type="date" name="work_date" class="form-control" required>
+                            <input type="time" name="start_time" class="form-control" required>
+                            <input type="time" name="end_time" class="form-control" required>
+                            <input type="text" name="note" class="form-control" placeholder="Ghi chú">
+                            <button class="btn btn-primary">Thêm</button>
+                        </form>
+                    </div>
+
+                    <div class="card-body">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nhân viên</th>
+                                    <th>Ngày làm</th>
+                                    <th>Bắt đầu</th>
+                                    <th>Kết thúc</th>
+                                    <th>Ghi chú</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($schedules as $schedule)
+                                    <tr>
+                                        <td><strong>{{ $schedule->user->real_name }}</strong> <span class="fw-light">({{ $schedule->user->name }})</span></td>
+                                        <td>
+                                            <form action="{{ route('hr-lich-lam-viec.update', $schedule->id) }}" method="POST" class="d-flex align-items-center">
+                                                @csrf @method('PUT')
+                                                <input type="date" name="work_date" value="{{ $schedule->work_date }}" class="form-control" style="width: fit-content;">
+                                                <span class="ms-2">{{ ucfirst(\Carbon\Carbon::parse($schedule->work_date)->locale('vi')->dayName) }}</span>
+                                        </td>
+                                        <td><input type="time" name="start_time" value="{{ $schedule->start_time }}" class="form-control"></td>
+                                        <td><input type="time" name="end_time" value="{{ $schedule->end_time }}" class="form-control"></td>
+                                        <td><input type="text" name="note" value="{{ $schedule->note }}" class="form-control"></td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm">Lưu</button>
+                                            </form>
+                                            <form action="{{ route('hr-lich-lam-viec.destroy', $schedule->id) }}" method="POST" class="d-inline">
+                                                @csrf @method('DELETE')
+                                                <button class="btn btn-danger btn-sm">Xóa</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                 <div class="card">
+                    <div class="card-header text-center bg-warning fw-bold">
+                        LỊCH LÀM VIỆC TUẦN {{ $startOfWeek->format('d/m') }} - {{ $endOfWeek->format('d/m') }}
+                    </div>
+                    <div class="card-body p-0 table-responsive">
+                        <table class="table table-bordered text-center align-middle mb-0">
+                            <thead>
+                                <tr class="table-info">
+                                    <th class="bg-primary text-white">Giờ</th>
+                                    @for ($i = 0; $i < 7; $i++)
+                                        <th>
+                                            @if ($i + 2 < 8)
+                                                Thứ {{ $i + 2 }}
+                                            @else
+                                                Chủ Nhật
+                                            @endif
+                                            <br>
+                                            {{ $startOfWeek->copy()->addDays($i)->format('d/m') }}
+                                        </th>
+                                    @endfor
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($hours as $hour)
+                                    <tr>
+                                        <td class="bg-primary text-white text-end pe-2 fw-bold">
+                                            @if ($hour <= 12)
+                                                {{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00 AM
+                                            @else
+                                                <!-- {{ str_pad($hour - 12, 2, '0', STR_PAD_LEFT) }}:00 PM -->
+                                                {{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00 PM
+                                            @endif
+                                        </td>
+
+                                        @for ($i = 0; $i < 7; $i++)
+                                            @php
+                                                $day = $startOfWeek->copy()->addDays($i)->toDateString();
+                                                $shiftUsers = collect($grouped[$day] ?? [])->filter(function ($s) use ($hour) {
+                                                    $start = intval(\Carbon\Carbon::parse($s->start_time)->format('H'));
+                                                    $end = intval(\Carbon\Carbon::parse($s->end_time)->format('H'));
+                                                    return $hour >= $start && $hour <= $end;
+                                                });
+                                            @endphp
+
+                                            <td style="min-width: 160px; vertical-align: middle;">
+                                                @foreach ($shiftUsers as $s)
+                                                    <div class="badge d-block text-wrap mb-1"
+                                                        style="background-color: {{ sprintf('#%06X', crc32($s->user->real_name) & 0xFFFFFF) }}">
+                                                        {{ $s->user->real_name }}
+                                                    </div>
+                                                @endforeach
+                                            </td>
+                                        @endfor
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <!-- Logs Tab -->
@@ -1927,6 +2058,7 @@
                 });
             });
         });
+        
         // JS Xử lý nút xem hóa đơn
         document.addEventListener('DOMContentLoaded', function () {
             const billModal = new bootstrap.Modal(document.getElementById('billDetailModal'));
@@ -1945,11 +2077,12 @@
                         const emp = data.employee;
                         const services = data.services;
 
-                        let serviceList = services.map(s => `<li>${s}</li>`).join('');
-
                         content.innerHTML = `
                                 <div class="mb-3">
-                                    <strong>Mã hóa đơn:</strong> HD${String(bill.id).padStart(4, '0')}
+                                    <strong>ID:</strong> #${String(bill.id).padStart(6, '0')}
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Mã hóa đơn:</strong> ${bill.bill_code}
                                 </div>
                                 <div class="mb-3">
                                     <strong>Nhân viên:</strong> ${emp.real_name} (${emp.ingame_name})
@@ -1965,7 +2098,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <strong>Dịch vụ:</strong>
-                                    <ul>${serviceList}</ul>
+                                    <ul>${services}</ul>
                                 </div>
                                 <div class="mb-3">
                                     <strong>Tổng tiền:</strong> ${new Intl.NumberFormat().format(bill.total_amount)}$
@@ -2001,7 +2134,8 @@
                 document.getElementById('editLicensePlate').value = bill.license_plate || '';
                 document.getElementById('editCustomerMomo').value = bill.customer_momo || '';
                 document.getElementById('editTotalAmount').value = bill.total_amount || 0;
-                document.getElementById('editServices').value = (JSON.parse(bill.services || '[]')).join(', ');
+                // document.getElementById('editServices').value = (JSON.parse(bill.services || '[]')).join(', ');
+                document.getElementById('editServices').value = bill.services || '';
                 document.getElementById('editNotes').value = bill.notes || '';
                 document.getElementById('editStatus').value = bill.status;
 
@@ -2021,10 +2155,11 @@
                     license_plate: document.getElementById('editLicensePlate').value,
                     customer_momo: document.getElementById('editCustomerMomo').value,
                     total_amount: document.getElementById('editTotalAmount').value,
-                    services: document.getElementById('editServices').value
-                        .split(',')
-                        .map(s => s.trim())
-                        .filter(Boolean),
+                    // services: document.getElementById('editServices').value
+                    //     .split(',')
+                    //     .map(s => s.trim())
+                    //     .filter(Boolean),
+                    services: document.getElementById('editServices').value,
                     notes: document.getElementById('editNotes').value,
                     status: document.getElementById('editStatus').value,
                 };
@@ -2097,16 +2232,17 @@
                     }
 
                     let rows = bills.map(b => {
-                        const services = JSON.parse(b.services || '[]').map(s => `<span class="badge bg-primary me-1">${s}</span>`).join('');
                         return `
                             <tr>
-                                <td>HD${String(b.id).padStart(4, '0')}</td>
+                                <td>#${b.id}</td>
                                 <td>${b.bill_code}</td>
                                 <td>${b.vehicle_type}</td>
                                 <td>${b.license_plate ?? 'N/A'}</td>
                                 <td>${b.customer_momo}</td>
-                                <td>${services}</td>
-                                <td><strong class="text-success">${new Intl.NumberFormat().format(b.total_amount)}$</strong></td>
+                                <td><span class="d-inline-block text-truncate" style="max-width: 300px;" data-bs-toggle="tooltip" title="${b.services}">${b.services}</span></td>
+                                <td><strong class="text-danger">${new Intl.NumberFormat().format(b.total_amount)}$</strong></td>
+                                <td><strong class="text-primary">${new Intl.NumberFormat().format(b.percentage, 0)}%</strong></td>
+                                <td><strong class="text-success">${new Intl.NumberFormat().format(b.employee_earnings)}$</strong></td>
                                 <td><span class="badge bg-${b.status === 'completed' ? 'success' : (b.status === 'pending' ? 'warning' : 'secondary')}">${b.status}</span></td>
                                 <td>${new Date(b.created_at).toLocaleString()}</td>
                                 <td>
@@ -2123,13 +2259,15 @@
                             <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Mã HD</th>
-                                        <th>Code</th>
+                                        <th>ID</th>
+                                        <th>Mã hóa đơn</th>
                                         <th>Loại xe</th>
                                         <th>Biển số</th>
                                         <th>Momo KH</th>
                                         <th>Dịch vụ</th>
-                                        <th>Tổng tiền</th>
+                                        <th>Tiền hóa đơn</th>
+                                        <th>Hoa hồng</th>
+                                        <th>Tiền nhận được từ hoa hồng</th>
                                         <th>Trạng thái</th>
                                         <th>Ngày tạo</th>
                                         <th>Thao tác</th>
@@ -2152,15 +2290,16 @@
 
                     const res = await fetch(`/repair-bills/${id}`);
                     const bill = await res.json();
-                    const services = JSON.parse(bill.services || '[]').map(s => `<li>${s}</li>`).join('');
 
                     content.innerHTML = `
                             <div><strong>Mã HD:</strong> HD${String(bill.id).padStart(6, '0')}</div>
                             <div><strong>Loại xe:</strong> ${bill.vehicle_type}</div>
                             <div><strong>Biển số:</strong> ${bill.license_plate}</div>
                             <div><strong>Momo:</strong> ${bill.customer_momo}</div>
-                            <div><strong>Dịch vụ:</strong><ul>${services}</ul></div>
+                            <div><strong>Dịch vụ:</strong>${bill.services}</div>
                             <div><strong>Tổng tiền:</strong> ${new Intl.NumberFormat().format(bill.total_amount)}$</div>
+                            <div><strong class="text-primary">Phần trăm hoa hồng:</strong> ${new Intl.NumberFormat().format(bill.percentage, 0)}%</div>
+                            <div><strong class="text-success">Tiền nhận được từ hoa hồng:</strong> ${new Intl.NumberFormat().format(bill.employee_earnings)}$</div>
                             <div><strong>Trạng thái:</strong> ${bill.status}</div>
                             <div><strong>Ghi chú:</strong> ${bill.notes ?? 'Không có'}</div>
                         `;

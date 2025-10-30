@@ -17,7 +17,11 @@ class RepairBillController extends Controller
 
         return view('pages.bills', compact('bills'));
     }
-
+    public function showBill($id)
+    {
+        $bill = RepairBill::with('user')->findOrFail($id);
+        return response()->json($bill);
+    }
     public function store(Request $request)
     {
         $request->validate([
@@ -42,11 +46,13 @@ class RepairBillController extends Controller
             'customer_momo' => $request->customer_momo,
             'vehicle_type' => $request->vehicle_type,
             'license_plate' => $request->license_plate,
-            'services' => is_array($request->services)
-                ? json_encode($request->services, JSON_UNESCAPED_UNICODE)
-                : $request->services,
+            // 'services' => is_array($request->services)
+            //     ? json_encode($request->services, JSON_UNESCAPED_UNICODE)
+            //     : $request->services,
+            'services' => $request->services,
             'total_amount' => $request->total_amount,
             'employee_earnings' => $employeeEarnings,
+            'percentage' => $percentage, // lưu lại phần trăm cố định tại thời điểm tạo
             'status' => 'pending',
             'notes' => $request->notes,
         ]);

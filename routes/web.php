@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\RepairBillController as AdminRepairBillController
 use App\Http\Controllers\EmployeeBillController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\WorkScheduleController;
 use App\Http\Middleware\CheckRole;
 
 Route::get('/', function () {
@@ -48,6 +49,10 @@ Route::middleware('auth')->group(function () {
     // Repair Bill Routes
     Route::get('/bills', [UserRepairBillController::class, 'index'])->name('bills.index');
     Route::post('/bills', [UserRepairBillController::class, 'store'])->name('bills.store');
+    Route::get('/repair-bills/{id}', [UserRepairBillController::class, 'showBill'])->name('employees.bills.detail');
+
+    // work-schedule
+    Route::get('/work-schedule', [WorkScheduleController::class, 'hienThiLichLamViecTuan'])->name('work-schedule');
 });
 
 // Route quản lý
@@ -79,6 +84,9 @@ Route::middleware(['auth', CheckRole::class])->group(function () {
     Route::get('/employees/{id}/bills', [EmployeeBillController::class, 'getBills'])->name('employees.bills.list');
     Route::get('/repair-bills/{id}', [EmployeeBillController::class, 'showBill'])->name('employees.bills.detail');
     Route::patch('/repair-bills/{id}', [EmployeeBillController::class, 'updateBill'])->name('repair-bills.update');
+
+    // Schedule
+    Route::resource('hr-lich-lam-viec', WorkScheduleController::class);
 
     // Role
     Route::patch('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');

@@ -18,6 +18,7 @@ class RepairBill extends Model
         'services',
         'total_amount',
         'employee_earnings',
+        'percentage',
         'status',
         'notes',
     ];

@@ -7,7 +7,7 @@
 @endpush
 @section('content')
     <div id="bills">
-        <h2 class="page-title"><i class="fas fa-file-invoice-dollar me-2"></i>Quản lý hóa đơn</h2>
+        <!-- <h2 class="page-title"><i class="fas fa-file-invoice-dollar me-2"></i>Quản lý hóa đơn</h2> -->
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -34,17 +34,26 @@
 
         <div class="card">
             <div class="card-header">
-                Danh sách hóa đơn
+                <span class="h3">Danh sách hóa đơn</span>
+                <div class="d-flex">
+                    <span class="me-3">Tổng hóa đơn: <strong>{{ $bills->count() }}</strong></span>
+                    <span class="me-3">Tổng doanh thu: <strong>{{ number_format($bills->sum('employee_earnings'), 0) }}
+                            $</strong></span>
+                    <span>Hoa hồng hiện tại:
+                        <strong>{{ number_format(auth()->user()->position->salary_percentage, 0) }}%</strong></span>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
                     <table class="table table-hover">
                         <thead>
                             <tr>
+                                <th>#</th>
                                 <th>Mã hóa đơn</th>
                                 <th>Momo</th>
                                 <th>Ngày tạo</th>
                                 <th>Loại xe</th>
+                                <th>Biển số</th>
                                 <th>Dịch vụ</th>
                                 <th>Tiền hóa đơn</th>
                                 <th>Hoa hồng</th>
@@ -55,24 +64,26 @@
                         </thead>
                         <tbody>
                             @forelse ($bills as $bill)
-                                @php
-                                    $services = json_decode($bill->services, true);
-                                @endphp
                                 <tr>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>#{{ $bill->bill_code }}</td>
                                     <td>{{ $bill->customer_momo }}</td>
                                     <td>{{ $bill->created_at->format('d/m/Y') }}</td>
                                     <td>{{ $bill->vehicle_type }}</td>
+                                    <td>{{ $bill->license_plate }}</td>
                                     <td>
-                                        @foreach($services as $service)
-                                            <span class="badge bg-primary me-1">
-                                                <i class="bi bi-tools"></i> {{ $service }}
-                                            </span>
-                                        @endforeach
+                                        <span class="d-inline-block text-truncate" style="max-width: 300px;"
+                                            data-bs-toggle="tooltip" title="{{ $bill->services }}">
+                                            {{ $bill->services }}
+                                        </span>
+                                        <!-- {{ $bill->services }} -->
                                     </td>
                                     <td>{{ number_format($bill->total_amount, 0) }} $</td>
-                                    <td>{{ auth()->user()->position->salary_percentage }}%</td>
-                                    <td>{{ number_format($bill->employee_earnings, 0) }} $</td>
+                                    <td class="text-primary">
+                                        {{ number_format($bill->percentage, 0) }}%
+                                    </td>
+                                    <td class="text-success"><strong>{{ number_format($bill->employee_earnings, 0) }} $</strong>
+                                    </td>
                                     <td>
                                         @if ($bill->status === 'completed')
                                             <span class="badge bg-success">Đã duyệt</span>
@@ -171,3 +182,7 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script></script>
+@endpush

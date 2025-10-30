@@ -24,7 +24,7 @@ class RepairBillController extends Controller
     public function show($id)
     {
         $bill = RepairBill::with('user')->findOrFail($id);
-        $services = json_decode($bill->services, true);
+        $services = $bill->services;
 
         return response()->json([
             'bill' => $bill,
