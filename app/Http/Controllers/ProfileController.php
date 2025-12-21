@@ -15,7 +15,7 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $tongSoHoaDon = $user->repairBills()->count();
-        $tongTienHoaDon = $user->repairBills()->sum('employee_earnings');
+        $tongTienHoaDon = $user->totalEarnings();
 
         // 📊 Lấy dữ liệu doanh thu theo tháng trong năm hiện tại
         $year = now()->year;

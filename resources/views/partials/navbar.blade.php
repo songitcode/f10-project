@@ -44,14 +44,16 @@
         </div>
     </header>
     @php
-        $users = \App\Models\User::where('position_id', 1)->take(1)->get();
+        $users = \App\Models\User::whereIn('position_id', [1, 2])->take(10)->get(); // take() giới hạn số lượng người dùng hiển thị
     @endphp
-    <div class="nav-info">
+    <div class="nav-info {{ $users ?? 'd-none' }} ">
         <div class="container">
             @foreach ($users as $user)
-                <span><i class="fa-brands fa-discord"></i>
-                    {{ $user->position->name ?? 'admin' }}:
-                    <strong> {{ $user->momo ?? 0000 }} |HH| {{ $user->real_name ?? 'admin'}} |F10</strong></span>
+                <small>
+                    <i class="fa-brands fa-discord"></i>
+                    {{ $user->position->name ?? '-' }}:
+                    <strong> {{ $user->momo ?? 0000 }} |HH| {{ $user->real_name ?? 'admin'}} |F10 </strong>
+                </small>
             @endforeach
         </div>
     </div>
@@ -97,7 +99,7 @@
                     @if (Auth::user()->isManager())
                         <li class="nav-item-custom">
                             <a class="nav-link nav-link-hover-cus nav-link-admin {{ Request::is('admin*') ? 'active-admin' : '' }}"
-                                href="{{ route('admin.dashboard') }}">
+                                href="{{ route('admin.dashboard') }}" target="_blank">
                                 <i class="fas fa-cogs me-2"></i>Quản lý
                             </a>
                         </li>
@@ -107,7 +109,8 @@
         </div>
     </nav>
 
-    <nav class="main-nav-custom py-2">
+    <!-- Navbar PC screen -->
+    <nav class="main-nav-custom py-2 ">
         <div class="container box-nav-menu justify-content-md-start">
             <button class="mobile-menu-toggle d-md-none w-100 text-start btn btn-light border-0 px-3 py-2 text-primary"
                 type="button" data-bs-toggle="collapse" data-bs-target="#mainMenuContent" aria-controls="mainMenuContent"

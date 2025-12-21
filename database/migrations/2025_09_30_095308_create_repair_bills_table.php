@@ -16,11 +16,17 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Nhân viên tạo
             $table->string('customer_momo'); // Momo khách hàng
             $table->string('vehicle_type'); // Loại xe
-            $table->string('license_plate')->nullable(); // Biển số
+            // $table->string('license_plate')->nullable(); // Biển số
             $table->text('services'); // Dịch vụ sửa chữa
             $table->decimal('total_amount', 12, 2); // Tổng tiền
             $table->decimal('employee_earnings', 12, 2); // Tiền nhân viên nhận
-            $table->decimal('percentage', 5, 2)->default(0); 
+            $table->decimal('percentage', 5, 2)->default(0);
+
+            // 🔽 Voucher (Bảo hiểm)
+            $table->foreignId('voucher_id')->nullable()->constrained('vouchers')->onDelete('set null');
+            $table->decimal('discount_amount', 12, 2)->default(0); // Số tiền giảm
+            $table->decimal('final_amount', 12, 2)->default(0);    // Tổng tiền sau khi giảm
+
             $table->string('status')->default('pending'); // Trạng thái
             $table->text('notes')->nullable(); // Ghi chú
             $table->timestamps();

@@ -10,7 +10,9 @@ use App\Http\Controllers\Admin\RepairBillController as AdminRepairBillController
 use App\Http\Controllers\EmployeeBillController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\WorkScheduleController;
+use App\Http\Controllers\VoucherController;
 use App\Http\Middleware\CheckRole;
 
 Route::get('/', function () {
@@ -40,7 +42,9 @@ Route::middleware('auth')->group(function () {
         return view('pages.history');
     })->name('history');
 
-    // Route profile function
+    // Home Routes
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+
     // Profile Routes
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
     Route::patch('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
@@ -84,6 +88,13 @@ Route::middleware(['auth', CheckRole::class])->group(function () {
     Route::get('/employees/{id}/bills', [EmployeeBillController::class, 'getBills'])->name('employees.bills.list');
     Route::get('/repair-bills/{id}', [EmployeeBillController::class, 'showBill'])->name('employees.bills.detail');
     Route::patch('/repair-bills/{id}', [EmployeeBillController::class, 'updateBill'])->name('repair-bills.update');
+
+    // Voucher
+    Route::get('/admin/vouchers', [VoucherController::class, 'index'])->name('vouchers.index');
+    Route::post('/admin/vouchers', [VoucherController::class, 'store'])->name('vouchers.store');
+    Route::patch('/admin/vouchers/{voucher}', [VoucherController::class, 'update'])->name('vouchers.update');
+    Route::patch('/admin/vouchers/{voucher}/toggle', [VoucherController::class, 'toggle'])->name('vouchers.toggle');
+    Route::delete('/admin/vouchers/{voucher}', [VoucherController::class, 'destroy'])->name('vouchers.destroy');
 
     // Schedule
     Route::resource('hr-lich-lam-viec', WorkScheduleController::class);

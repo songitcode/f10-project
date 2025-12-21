@@ -215,8 +215,15 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Biển số</label>
-                                <input type="text" name="license_plate" class="form-control">
+                                <label for="editVoucher">Bảo hiểm / Voucher</label>
+                                <select id="voucher_id" name="voucher_id" class="form-select">
+                                    <option value="">-- Không áp dụng --</option>
+                                    @foreach($vouchers as $voucher)
+                                        <option value="{{ $voucher->id }}">
+                                            {{ $voucher->name }} ({{ $voucher->code }})
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             <div class="col-md-6">

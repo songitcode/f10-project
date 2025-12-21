@@ -3,7 +3,8 @@
 @section('content')
     <div class="card">
         <div class="bg-warning text-center">
-            <h5 class="fw-bold p-2">LỊCH LÀM VIỆC TUẦN {{ $startOfWeek->format('d/m') }} - {{ $endOfWeek->format('d/m') }}</h5>
+            <h5 class="fw-bold p-2">LỊCH LÀM VIỆC TUẦN {{ $startOfWeek->format('d/m') }} - {{ $endOfWeek->format('d/m') }}
+            </h5>
         </div>
         <div class="card-body p-0 table-responsive">
             <table class="table table-bordered text-center align-middle mb-0">

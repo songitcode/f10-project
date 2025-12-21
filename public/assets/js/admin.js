@@ -227,6 +227,26 @@ function validateEmployeeForm() {
     return true;
 }
 
+// Fix for mobile responsiveness
+window.addEventListener('resize', function () {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+
+    if (window.innerWidth >= 992) {
+        sidebar.classList.add('active');
+        mainContent.classList.add('sidebar-open');
+    } else {
+        sidebar.classList.remove('active');
+        mainContent.classList.remove('sidebar-open');
+    }
+});
+// Initialize on load
+if (window.innerWidth >= 992) {
+    document.getElementById('sidebar').classList.add('active');
+    document.getElementById('mainContent').classList.add('sidebar-open');
+}
+
+
 // // Xử lý Carousel Thêm Chức Vụ
 // const positionCarousel = new bootstrap.Carousel(document.getElementById('positionCarousel'), {
 //     interval: false
