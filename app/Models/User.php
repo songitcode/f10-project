@@ -53,6 +53,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(RepairBill::class);
     }
+    public function totalEarnings()
+    {
+        return $this->repairBills()->sum('employee_earnings');
+    }
+
     public function workSchedules(): HasMany
     {
         return $this->hasMany(WorkSchedule::class);

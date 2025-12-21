@@ -387,7 +387,7 @@
                                             </td>
                                             @if (auth()->user()->isQuanLyNhanSu())
                                             <td>
-                                                <div class="btn-group gap-2">
+                                                <div class="btn-group">
                                                     <button class="btn btn-outline-primary edit-employee"
                                                         data-employee-id="{{ $employee->id }}" data-bs-toggle="tooltip"
                                                         title="Chỉnh sửa">
@@ -632,6 +632,7 @@
                     @endforeach
                 </div>
                 <!-- Filter Section -->
+                <!-- Chưa làm -->
                 <div class="card mb-3">
                     <div class="card-body">
                         <form id="filterBillForm" method="GET">
@@ -701,11 +702,13 @@
                                         <th>Nhân viên</th>
                                         <th>Momo KH</th>
                                         <th>Loại xe</th>
-                                        <th>Biển số</th>
                                         <th>Dịch vụ</th>
                                         <th>Tiền hóa đơn</th>
+                                        <th>Bảo hiểm/ Voucher</th>
+                                        <th>Tiền bảo hiểm</th>
                                         <th>Hoa hồng</th>
-                                        <th>Tiền nhận được</th>
+                                        <th>Tiền hoa hồng</th>
+                                        <th>Tổng nhận được</th>
                                         <th>Trạng thái</th>
                                         <th>Ngày tạo</th>
                                         <th>Thao tác</th>
@@ -727,17 +730,29 @@
                                             </td>
                                             <td>{{ $bill->customer_momo }}</td>
                                             <td>{{ $bill->vehicle_type }}</td>
-                                            <td>{{ $bill->license_plate ?? 'N/A' }}</td>
                                             <td>
                                                 <span class="d-inline-block text-truncate" style="max-width: 300px;"
                                                     data-bs-toggle="tooltip" title="{{ $bill->services }}">
                                                     {{ $bill->services }}
                                                 </span>
                                             </td>
-                                            <td><strong>{{ number_format($bill->total_amount) }}$</strong></td>
-                                            <!-- <td><strong class="text-primary">{{ number_format($bill->user->position->salary_percentage, 0) }}%</strong></td> -->
+                                            {{-- Tiền hóa đơn --}}
+                                            <td><strong class="text-warning">{{ number_format($bill->total_amount, 0, ',', '.') }}$</strong></td>
+                                            {{-- Voucher --}}
+                                            <td>
+                                                @if($bill->voucher)
+                                                    <span class="badge bg-info">{{ $bill->voucher->code }}</span><br>
+                                                    <small>Giảm: <span class="text-danger">-{{ number_format($bill->discount_amount, 0, ',', '.') }}$</span></small>
+                                                @else
+                                                    <span class="text-muted">Không</span>
+                                                @endif
+                                            </td>
+                                            {{-- Tổng tiền đã tính voucher --}}
+                                            <td><strong class="text-secondary">{{ number_format($bill->final_amount, 0, ',', '.') }}$</strong></td>
                                             <td><strong class="text-primary">{{ number_format($bill->percentage) }}%</strong></td>
-                                            <td><strong class="text-success">{{ number_format($bill->employee_earnings, 0) }}$</strong></td>
+                                            <td class="text-success"><strong>{{ number_format($bill->employee_earnings, 0, ',', '.') }} $</strong></td>
+                                            <td class="text-success"><strong>{{ number_format($bill->employee_earnings, 0, ',', '.') }} $</strong></td>
+                                            <!--  -->
                                             <td>
                                                 @if($bill->status == 'pending')
                                                     <span class="badge bg-warning">Chờ duyệt</span>
@@ -959,11 +974,101 @@
                 </div>
             </div>
             <!-- voucher tab bảo hiểm tab -->
-             <div id="voucher-tab-management" class="tab-content active">
-                <div class="h1">VOUCHER</div>
-             </div>
+            <div id="voucher-tab-management" class="tab-content">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>Quản lý Voucher (Bảo hiểm)</h4>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVoucherModal">
+                        <i class="fas fa-plus"></i> Thêm voucher
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-ticket-alt me-2"></i>Danh sách voucher
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Mã</th>
+                                        <th>Tên voucher</th>
+                                        <th>Giảm (%)</th>
+                                        <th>Giảm ($)</th>
+                                        <th>Ngày bắt đầu</th>
+                                        <th>Ngày kết thúc</th>
+                                        <th>Trạng thái</th>
+                                        <th>Người tạo</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse($vouchers as $voucher)
+                                        <tr>
+                                            <td>{{ $voucher->id }}</td>
+                                            <td><strong>{{ $voucher->code }}</strong></td>
+                                            <td>{{ $voucher->name }}</td>
+                                            <td>{{ $voucher->discount_percent }}%</td>
+                                            <td>{{ number_format($voucher->discount_amount, 0, ',', '.') }}$</td>
+                                            <td>{{ $voucher->start_date?->format('d/m/Y') ?? '-' }}</td>
+                                            <td>{{ $voucher->end_date?->format('d/m/Y') ?? '-' }}</td>
+                                            <td>
+                                                @if($voucher->is_active)
+                                                    <span class="badge bg-success">Hoạt động</span>
+                                                @else
+                                                    <span class="badge bg-danger">Vô hiệu hóa</span>
+                                                @endif
+                                            </td>
+                                            <td>{{ $voucher->creator->real_name ?? 'Hệ thống' }}</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-warning"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#editVoucherModal"
+                                                            data-id="{{ $voucher->id }}"
+                                                            data-code="{{ $voucher->code }}"
+                                                            data-name="{{ $voucher->name }}"
+                                                            data-percent="{{ $voucher->discount_percent }}"
+                                                            data-amount="{{ $voucher->discount_amount }}"
+                                                            data-start="{{ $voucher->start_date }}"
+                                                            data-end="{{ $voucher->end_date }}">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+
+                                                    <form action="{{ route('vouchers.toggle', $voucher->id) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button class="btn btn-outline-secondary" data-bs-toggle="tooltip"
+                                                            title="{{ $voucher->is_active ? 'Vô hiệu hóa' : 'Kích hoạt' }}">
+                                                            <i class="fas {{ $voucher->is_active ? 'fa-ban' : 'fa-check' }}"></i>
+                                                        </button>
+                                                    </form>
+                                                    <form action="{{ route('vouchers.destroy', $voucher->id) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Xóa"
+                                                            onclick="return confirm('Bạn có chắc muốn xóa voucher này không?')">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="10" class="text-center text-muted">Chưa có voucher nào</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Work schedule Tab -->
-            <div id="work-schedule" class="tab-content active">
+            <div id="work-schedule" class="tab-content">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <form action="{{ route('hr-lich-lam-viec.store') }}" method="POST" class="d-flex gap-2">
@@ -1646,7 +1751,7 @@
         </div>
     </div>
 
-    <!-- Modal chỉnh sửa hóa đơn -->
+    <!-- Modal sửa hóa đơn -->
     <div class="modal fade" id="billEditModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -1663,9 +1768,20 @@
                                 <label>Loại xe</label>
                                 <input type="text" id="editVehicleType" class="form-control" required>
                             </div>
-                            <div class="col-md-6">
+                            <!-- <div class="col-md-6">
                                 <label>Biển số</label>
                                 <input type="text" id="editLicensePlate" class="form-control">
+                            </div> -->
+                            <div class="col-md-6">
+                                <label for="editVoucher">Bảo hiểm / Voucher</label>
+                                    <select id="editVoucher" class="form-select">
+                                        <option value="">-- Không áp dụng --</option>
+                                        @foreach($vouchers as $voucher)
+                                            <option value="{{ $voucher->id }}">
+                                                {{ $voucher->name }} ({{ $voucher->code }})
+                                            </option>
+                                        @endforeach
+                                    </select>
                             </div>
                         </div>
 
@@ -1726,31 +1842,108 @@
         </div>
     </div>
 
+    <!-- Modal thêm voucher -->
+    <div class="modal fade" id="addVoucherModal" tabindex="-1" aria-labelledby="addVoucherModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form action="{{ route('vouchers.store') }}" method="POST" class="modal-content">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addVoucherModalLabel">Thêm voucher mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="code" class="form-label">Mã voucher</label>
+                        <input type="text" name="code" id="code" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Tên voucher</label>
+                        <input type="text" name="name" id="name" class="form-control" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="discount_percent" class="form-label">Giảm (%)</label>
+                            <input type="number" name="discount_percent" id="discount_percent" class="form-control" step="0.01" min="0" max="100">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="discount_amount" class="form-label">Giảm ($)</label>
+                            <input type="number" name="discount_amount" id="discount_amount" class="form-control" step="0.01" min="0">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="start_date" class="form-label">Ngày bắt đầu</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="end_date" class="form-label">Ngày kết thúc</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm voucher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editVoucherModal" tabindex="-1">
+        <div class="modal-dialog">
+            <form method="POST" id="editVoucherForm" class="modal-content">
+                @csrf
+                @method('PATCH')
+
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">Chỉnh sửa voucher</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="voucher_id" id="edit_voucher_id">
+
+                    <div class="mb-3">
+                        <label class="form-label">Tên voucher</label>
+                        <input type="text" id="edit_name" name="name" class="form-control">
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label>Giảm (%)</label>
+                            <input type="number" id="edit_percent" step="0.01" name="discount_percent" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label>Giảm ($)</label>
+                            <input type="number" id="edit_amount" step="0.01" name="discount_amount" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col">
+                            <label>Ngày bắt đầu</label>
+                            <input type="date" id="edit_start" name="start_date" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label>Ngày kết thúc</label>
+                            <input type="date" id="edit_end" name="end_date" class="form-control">
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button class="btn btn-warning">Lưu</button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
 @push('scripts')
     <script src="{{ asset('assets/js/admin.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Fix for mobile responsiveness
-        window.addEventListener('resize', function () {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-
-            if (window.innerWidth >= 992) {
-                sidebar.classList.add('active');
-                mainContent.classList.add('sidebar-open');
-            } else {
-                sidebar.classList.remove('active');
-                mainContent.classList.remove('sidebar-open');
-            }
-        });
-
-        // Initialize on load
-        if (window.innerWidth >= 992) {
-            document.getElementById('sidebar').classList.add('active');
-            document.getElementById('mainContent').classList.add('sidebar-open');
-        }
-
         // Chuyển Tab Dashboard
         document.addEventListener('DOMContentLoaded', function () {
             // Fix sidebar toggle
@@ -2067,6 +2260,7 @@
                 button.addEventListener('click', async function () {
                     const billId = this.getAttribute('data-bill-id');
                     const content = document.getElementById('billDetailContent');
+                    const fmt = n => new Intl.NumberFormat().format(Math.round(n));
                     content.innerHTML = `<p class="text-muted text-center">Đang tải dữ liệu...</p>`;
 
                     try {
@@ -2094,14 +2288,20 @@
                                     <strong>Loại xe:</strong> ${bill.vehicle_type}
                                 </div>
                                 <div class="mb-3">
-                                    <strong>Biển số:</strong> ${bill.license_plate ?? 'N/A'}
-                                </div>
-                                <div class="mb-3">
                                     <strong>Dịch vụ:</strong>
                                     <ul>${services}</ul>
                                 </div>
                                 <div class="mb-3">
-                                    <strong>Tổng tiền:</strong> ${new Intl.NumberFormat().format(bill.total_amount)}$
+                                    <strong>Tổng tiền:</strong> ${fmt(bill.total_amount)}$
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Hoa hồng:</strong> ${fmt(bill.percentage)}$
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Tiền hoa hồng:</strong> ${fmt(bill.employee_earnings)}$
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Bảo hiểm/ Voucher:</strong> ${fmt(bill.voucher ? bill.voucher.code : 'Không')}$
                                 </div>
                                 <div class="mb-3">
                                     <strong>Trạng thái:</strong> ${bill.status}
@@ -2121,27 +2321,32 @@
             });
         });
         //// Xử lý nút sửa hóa đơn
-        document.addEventListener('click', async function (e) {
-            // 🟡 Khi nhấn nút Sửa
+       document.addEventListener('click', async function (e) {
             if (e.target.closest('.btn-outline-warning')) {
                 const id = e.target.closest('.btn-outline-warning').closest('tr').querySelector('.view-bill').getAttribute('data-bill-id');
                 const res = await fetch(`/repair-bills/${id}`);
                 const bill = await res.json();
 
-                // Đổ dữ liệu vào form
                 document.getElementById('editBillId').value = bill.id;
                 document.getElementById('editVehicleType').value = bill.vehicle_type || '';
-                document.getElementById('editLicensePlate').value = bill.license_plate || '';
                 document.getElementById('editCustomerMomo').value = bill.customer_momo || '';
                 document.getElementById('editTotalAmount').value = bill.total_amount || 0;
-                // document.getElementById('editServices').value = (JSON.parse(bill.services || '[]')).join(', ');
                 document.getElementById('editServices').value = bill.services || '';
                 document.getElementById('editNotes').value = bill.notes || '';
                 document.getElementById('editStatus').value = bill.status;
 
+                // 🟢 chọn đúng voucher của hóa đơn (nếu có)
+                const selectVoucher = document.getElementById('editVoucher');
+                if (bill.voucher_id) {
+                    selectVoucher.value = bill.voucher_id;
+                } else {
+                    selectVoucher.value = '';
+                }
+
                 new bootstrap.Modal(document.getElementById('billEditModal')).show();
             }
         });
+
         // 🟢 Submit form chỉnh sửa
         document.addEventListener('DOMContentLoaded', () => {
             const editForm = document.getElementById('editBillForm');
@@ -2152,16 +2357,12 @@
 
                 const payload = {
                     vehicle_type: document.getElementById('editVehicleType').value,
-                    license_plate: document.getElementById('editLicensePlate').value,
                     customer_momo: document.getElementById('editCustomerMomo').value,
                     total_amount: document.getElementById('editTotalAmount').value,
-                    // services: document.getElementById('editServices').value
-                    //     .split(',')
-                    //     .map(s => s.trim())
-                    //     .filter(Boolean),
                     services: document.getElementById('editServices').value,
                     notes: document.getElementById('editNotes').value,
                     status: document.getElementById('editStatus').value,
+                    voucher_id: document.getElementById('editVoucher').value || null,
                 };
 
                 try {
@@ -2174,7 +2375,6 @@
                         body: JSON.stringify(payload)
                     });
 
-                    // Nếu request thất bại (419, 422, 500...)
                     if (!res.ok) {
                         const errText = await res.text();
                         console.error('❌ Lỗi server:', errText);
@@ -2185,7 +2385,6 @@
                     const result = await res.json();
 
                     if (result.success) {
-                        // alert('✅ ' + result.message);
                         Swal.fire({
                             icon: 'success',
                             title: 'Đã cập nhật!',
@@ -2208,6 +2407,7 @@
             });
         });
 
+        // Danh sách hóa đơn khi nhấn MỞ
         document.addEventListener('DOMContentLoaded', function () {
             const employeeModal = new bootstrap.Modal(document.getElementById('employeeBillsModal'));
             const billDetailModal = new bootstrap.Modal(document.getElementById('billDetailModal'));
@@ -2225,36 +2425,74 @@
 
                     const emp = data.employee;
                     const bills = data.bills;
-
+                    const user = data.user;
+                    const fmt = n => new Intl.NumberFormat().format(Math.round(n));
+                    const tongThucThu = bills.reduce(
+                        (sum, b) => sum + (Number(b.employee_earnings) || 0),
+                        0
+                    );  
                     if (!bills.length) {
                         container.innerHTML = `<p class="text-center text-muted">Nhân viên này chưa có hóa đơn nào.</p>`;
                         return;
                     }
 
                     let rows = bills.map(b => {
+                        // 🧩 Xử lý voucher/bảo hiểm
+                        const voucherCode = b.voucher
+                            ? `<span class="badge bg-info">${b.voucher.code}</span> <br> <small class="text-danger">${b.voucher.name}</small>`
+                            : 'Không';
+                        const discountAmount = b.discount_amount || 0;
+                        const finalAmount = b.final_amount || 0;
+                        
                         return `
                             <tr>
                                 <td>#${b.id}</td>
                                 <td>${b.bill_code}</td>
                                 <td>${b.vehicle_type}</td>
-                                <td>${b.license_plate ?? 'N/A'}</td>
                                 <td>${b.customer_momo}</td>
-                                <td><span class="d-inline-block text-truncate" style="max-width: 300px;" data-bs-toggle="tooltip" title="${b.services}">${b.services}</span></td>
-                                <td><strong class="text-danger">${new Intl.NumberFormat().format(b.total_amount)}$</strong></td>
-                                <td><strong class="text-primary">${new Intl.NumberFormat().format(b.percentage, 0)}%</strong></td>
-                                <td><strong class="text-success">${new Intl.NumberFormat().format(b.employee_earnings)}$</strong></td>
-                                <td><span class="badge bg-${b.status === 'completed' ? 'success' : (b.status === 'pending' ? 'warning' : 'secondary')}">${b.status}</span></td>
+                                <td>
+                                    <span class="d-inline-block text-truncate" style="max-width: 300px;" data-bs-toggle="tooltip" title="${b.services}">
+                                        ${b.services}
+                                    </span>
+                                </td>
+                                <td><strong class="text-warning">${fmt(b.total_amount)}$</strong></td>
+                                <td>${voucherCode}</td>
+                                <td><strong class="text-primary">${fmt(b.percentage)}%</strong></td>
+                                <td><strong class="text-success">${fmt(b.employee_earnings)}$</strong></td>
+                                <td><strong class="text-info">${fmt(b.employee_earnings)}$</strong></td>
+                                <td>
+                                    <span class="badge bg-${b.status === 'completed'
+                                        ? 'success'
+                                        : b.status === 'pending'
+                                        ? 'warning'
+                                        : b.status === 'in_progress'
+                                        ? 'primary'
+                                        : 'secondary'}">
+                                        ${b.status}
+                                    </span>
+                                </td>
                                 <td>${new Date(b.created_at).toLocaleString()}</td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-info view-bill" data-bill-id="${b.id}"><i class="fas fa-eye"></i></button>
-                                    <button class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-info view-bill" data-bill-id="${b.id}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-warning edit-bill" data-bill-id="${b.id}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
                                 </td>
                             </tr>
                         `;
                     }).join('');
 
                     container.innerHTML = `
-                        <h5 class="mb-3">#${emp.id} ${emp.position.name} <strong>${emp.real_name}</strong> (${emp.ingame_name}) - Username: ${emp.name}</h5>
+                        <div class="mb-4">
+                            <h5 class="mb-3">
+                                #${emp.id} - <strong>${emp.real_name}</strong> (${emp.ingame_name}) 
+                                <small class="text-muted">[${emp.position?.name ?? 'Không rõ'}]</small>
+                            </h5>
+                            <span class="badge bg-secondary">Tổng hóa đơn: ${bills.length}</span>
+                            <span class="badge bg-success">Tổng tiền thực thu: ${fmt(tongThucThu)}$</span>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
                                 <thead>
@@ -2262,12 +2500,13 @@
                                         <th>ID</th>
                                         <th>Mã hóa đơn</th>
                                         <th>Loại xe</th>
-                                        <th>Biển số</th>
                                         <th>Momo KH</th>
                                         <th>Dịch vụ</th>
-                                        <th>Tiền hóa đơn</th>
-                                        <th>Hoa hồng</th>
-                                        <th>Tiền nhận được từ hoa hồng</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Bảo hiểm/ Voucher</th>
+                                        <th>Hoa hồng (%)</th>
+                                        <th>Tiền hoa hồng</th>
+                                        <th>Thực thu</th>
                                         <th>Trạng thái</th>
                                         <th>Ngày tạo</th>
                                         <th>Thao tác</th>
@@ -2280,7 +2519,9 @@
                 });
             });
 
+            // 
             // Nhấn "Xem chi tiết hóa đơn"
+            // 
             document.addEventListener('click', async function (e) {
                 if (e.target.closest('.view-bill')) {
                     const id = e.target.closest('.view-bill').getAttribute('data-bill-id');
@@ -2290,18 +2531,31 @@
 
                     const res = await fetch(`/repair-bills/${id}`);
                     const bill = await res.json();
+                    const voucherInfo = bill.voucher
+                                ? `${bill.voucher.name} (${bill.voucher.code})`
+                                : 'Không áp dụng';
+                    const discount = bill.discount_amount ?? 0;
+                    const thucThu = bill.employee_earnings;
+                    const fmt = n => new Intl.NumberFormat().format(Math.round(n));
 
                     content.innerHTML = `
-                            <div><strong>Mã HD:</strong> HD${String(bill.id).padStart(6, '0')}</div>
+                            <div><strong>Mã hóa đơn:</strong> ${bill.bill_code}</div>
                             <div><strong>Loại xe:</strong> ${bill.vehicle_type}</div>
-                            <div><strong>Biển số:</strong> ${bill.license_plate}</div>
-                            <div><strong>Momo:</strong> ${bill.customer_momo}</div>
-                            <div><strong>Dịch vụ:</strong>${bill.services}</div>
-                            <div><strong>Tổng tiền:</strong> ${new Intl.NumberFormat().format(bill.total_amount)}$</div>
-                            <div><strong class="text-primary">Phần trăm hoa hồng:</strong> ${new Intl.NumberFormat().format(bill.percentage, 0)}%</div>
-                            <div><strong class="text-success">Tiền nhận được từ hoa hồng:</strong> ${new Intl.NumberFormat().format(bill.employee_earnings)}$</div>
-                            <div><strong>Trạng thái:</strong> ${bill.status}</div>
-                            <div><strong>Ghi chú:</strong> ${bill.notes ?? 'Không có'}</div>
+                            <div><strong>Momo KH:</strong> ${bill.customer_momo}</div>
+                            <div><strong>Dịch vụ:</strong> ${bill.services}</div>
+                            <div><strong>Bảo hiểm / Voucher:</strong> ${voucherInfo}</div>
+                            <div><strong>Tổng tiền hóa đơn gốc:</strong> ${fmt(bill.total_amount)}$</div>
+                            <div><strong class="text-danger">Tổng tiền sau voucher ${bill.voucher ? bill.voucher.name : '' }:</strong> ${fmt(bill.final_amount)}$</div>
+                            <div><strong class="text-primary">Phần trăm hoa hồng:</strong> ${bill.percentage}%</div>
+                            <div><strong class="text-warning">Tiền sau ${bill.percentage}% hoa hồng:</strong> ${fmt(bill.employee_earnings)}$</div>
+                            <div><strong class="text-success">Thực thu:</strong> ${fmt(thucThu)}$</div>
+                            <div><strong>Trạng thái:</strong> 
+                                <span class="badge bg-${bill.status === 'completed' ? 'success' : (bill.status === 'pending' ? 'warning' : 'secondary')}">
+                                    ${bill.status}
+                                </span>
+                            </div>
+                            <div><strong>Ghi chú:</strong> ${bill.notes || 'Không'}</div>
+                            <small>Tạo ngày: ${new Date(bill.created_at).toLocaleString()}</small>
                         `;
                 }
             });
@@ -2326,6 +2580,22 @@
                     modal.show();
                 });
             });
+        });
+        // Mở modal sửa voucher Load dữ liệu vào modal
+        const editModal = document.getElementById('editVoucherModal');
+        editModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+
+            document.getElementById('edit_voucher_id').value = button.getAttribute('data-id');
+            document.getElementById('edit_name').value = button.getAttribute('data-name');
+            document.getElementById('edit_percent').value = button.getAttribute('data-percent');
+            document.getElementById('edit_amount').value = button.getAttribute('data-amount');
+            document.getElementById('edit_start').value = button.getAttribute('data-start');
+            document.getElementById('edit_end').value = button.getAttribute('data-end');
+
+            // Set form action
+            document.getElementById('editVoucherForm').action =
+                `/admin/vouchers/${button.getAttribute('data-id')}`;
         });
 
         // Flash message tự ẩn

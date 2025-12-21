@@ -46,7 +46,7 @@
                             </div>
                             <div class="profile-stat">
                                 <div class="profile-stat-value">{{ number_format($tongTienHoaDon) }}$</div>
-                                <div class="profile-stat-label">Thu nhập HĐ</div>
+                                <div class="profile-stat-label">Thu nhập</div>
                             </div>
                             <div class="profile-stat">
                                 <div class="profile-stat-value">{{ number_format($user->position->salary_percentage, 0) }}%

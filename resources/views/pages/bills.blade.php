@@ -53,13 +53,15 @@
                                 <th>Momo</th>
                                 <th>Ngày tạo</th>
                                 <th>Loại xe</th>
-                                <th>Biển số</th>
                                 <th>Dịch vụ</th>
-                                <th>Tiền hóa đơn</th>
+                                <th>Hóa đơn</th>
+                                <th>Bảo hiểm/ Voucher</th>
+                                <th>Tiền bảo hiểm</th>
                                 <th>Hoa hồng</th>
-                                <th>Tiền nhận được</th>
-                                <th>Trạng thái</th>
-                                <th>Thao tác</th>
+                                <th>Tiền hoa hồng</th>
+                                <th>Tổng nhận được</th>
+                                <!-- <th>Trạng thái</th> -->
+                                <!-- <th>Thao tác</th> -->
                             </tr>
                         </thead>
                         <tbody>
@@ -70,27 +72,47 @@
                                     <td>{{ $bill->customer_momo }}</td>
                                     <td>{{ $bill->created_at->format('d/m/Y') }}</td>
                                     <td>{{ $bill->vehicle_type }}</td>
-                                    <td>{{ $bill->license_plate }}</td>
                                     <td>
                                         <span class="d-inline-block text-truncate" style="max-width: 300px;"
                                             data-bs-toggle="tooltip" title="{{ $bill->services }}">
                                             {{ $bill->services }}
                                         </span>
-                                        <!-- {{ $bill->services }} -->
                                     </td>
-                                    <td>{{ number_format($bill->total_amount, 0) }} $</td>
-                                    <td class="text-primary">
+                                    {{-- Tổng tiền gốc --}}
+                                    <td class="text-warning tienHoaDon">
+                                        <strong>{{ number_format($bill->total_amount, 0, ',', '.') }} $</strong>
+                                    </td>
+                                    {{-- Voucher --}}
+                                    <td>
+                                        @if($bill->voucher)
+                                            <span class="badge bg-info">{{ $bill->voucher->code }}</span><br>
+                                            <small>Giảm: <span class="text-danger">-{{ number_format($bill->discount_amount, 0, ',', '.') }}$</span></small>
+                                        @else
+                                            <span class="text-muted">Không</span>
+                                        @endif
+                                    </td>
+                                    <td><strong class="text-secondary">{{ number_format($bill->final_amount, 0, ',', '.') }}$</strong></td>
+                                    <td class="text-primary hoaHong">
                                         {{ number_format($bill->percentage, 0) }}%
                                     </td>
-                                    <td class="text-success"><strong>{{ number_format($bill->employee_earnings, 0) }} $</strong>
+                                    {{-- Tiền nhân viên nhận --}}
+                                    <td>
+                                        <strong
+                                            class="text-success">{{ number_format($bill->employee_earnings, 0, ',', '.') }}$</strong>
                                     </td>
+
+                                    <td class="text-success">
+                                        <strong>{{ number_format($bill->employee_earnings, 0, ',', '.') }}
+                                            $</strong>
+                                    </td>
+                                    {{--
                                     <td>
                                         @if ($bill->status === 'completed')
-                                            <span class="badge bg-success">Đã duyệt</span>
+                                        <span class="badge bg-success">Đã duyệt</span>
                                         @elseif ($bill->status === 'pending')
-                                            <span class="badge bg-warning">Chờ duyệt</span>
+                                        <span class="badge bg-warning">Chờ duyệt</span>
                                         @else
-                                            <span class="badge bg-secondary">{{ ucfirst($bill->status) }}</span>
+                                        <span class="badge bg-secondary">{{ ucfirst($bill->status) }}</span>
                                         @endif
                                     </td>
                                     <td>
@@ -100,6 +122,7 @@
                                             <button class="btn btn-outline-danger"><i class="fas fa-trash"></i></button>
                                         </div>
                                     </td>
+                                    --}}
                                 </tr>
                             @empty
                                 <tr>
@@ -152,8 +175,15 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label">Biển số</label>
-                                <input type="text" name="license_plate" class="form-control">
+                                <label for="editVoucher">Bảo hiểm / Voucher</label>
+                                <select id="voucher_id" name="voucher_id" class="form-select">
+                                    <option value="">-- Không áp dụng --</option>
+                                    @foreach($vouchers as $voucher)
+                                        <option value="{{ $voucher->id }}">
+                                            {{ $voucher->name }} ({{ $voucher->code }})
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
 
                             <div class="col-md-6">
