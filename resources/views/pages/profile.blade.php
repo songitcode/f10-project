@@ -1,7 +1,29 @@
 @extends('layouts.app')
 
 @section('title', Auth::user()->real_name ?? 'N/A')
+<style>
+    #view-password {
+        display: none;
+    }
 
+    .lb-view-password {
+        cursor: pointer;
+
+        &:hover {
+            color: #0d6efd;
+        }
+    }
+
+    .link-change-pass {
+        text-decoration: none;
+        color: #c1121f;
+        border-radius: 10px;
+
+        &:hover {
+            border-bottom: 1px solid #c1121f;
+        }
+    }
+</style>
 @section('content')
     <div id="profile" class="profile-content">
         <h2 class="page-title"><i class="fas fa-user me-2"></i>Hồ sơ cá nhân</h2>
@@ -24,14 +46,13 @@
                             </div>
                             <div class="profile-stat">
                                 <div class="profile-stat-value">{{ number_format($tongTienHoaDon) }}$</div>
-                                <div class="profile-stat-label">Thu nhập HĐ</div>
+                                <div class="profile-stat-label">Thu nhập</div>
                             </div>
-                            {{--
                             <div class="profile-stat">
-                                <div class="profile-stat-value">{{ $user->role->name ?? 'N/A' }}</div>
-                                <div class="profile-stat-label">Quyền</div>
+                                <div class="profile-stat-value">{{ number_format($user->position->salary_percentage, 0) }}%
+                                </div>
+                                <div class="profile-stat-label">Hoa hồng</div>
                             </div>
-                            --}}
                         </div>
 
                         <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#profileModal">
@@ -71,7 +92,8 @@
                         <div>
                             <label>Tên đăng nhập</label>
                             <p>{{ $user->name }}</p>
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Thay đổi mật khẩu</a>
+                            <a href="#" class="link-change-pass" data-bs-toggle="modal"
+                                data-bs-target="#changePasswordModal">Thay đổi mật khẩu</a>
                         </div>
                     </div>
                 </div>
@@ -145,16 +167,21 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label>Mật khẩu hiện tại</label>
-                        <input type="password" name="current_password" class="form-control" required>
+                        <input type="password" name="current_password" class="form-control toggle-password" required>
                     </div>
                     <div class="mb-3">
                         <label>Mật khẩu mới</label>
-                        <input type="password" name="new_password" class="form-control" required>
+                        <input type="password" name="new_password" class="form-control toggle-password" required>
                     </div>
                     <div class="mb-3">
                         <label>Xác nhận mật khẩu mới</label>
-                        <input type="password" name="new_password_confirmation" class="form-control" required>
+                        <input type="password" name="new_password_confirmation" id="pwd"
+                            class="form-control toggle-password" required>
                     </div>
+                    <p>
+                        <label for="view-password" class="lb-view-password"><i class="fa fa-eye"></i> Hiện Mật Khẩu</label>
+                        <input type="checkbox" id="view-password" onclick="toggleAllPasswords(this)">
+                    </p>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-success">Đổi mật khẩu</button>
@@ -162,10 +189,10 @@
             </form>
         </div>
     </div>
-    <div class="card mt-4">
-        <div class="card-header">Lịch sử hoạt động</div>
-        <div class="card-body">
-            <div class="border-bottom py-2 table-responsive">
+    <div class="mt-4">
+        <div class="profile-card-header mb-0 h4" style="margin: 0 50px;">Lịch sử hoạt động</div>
+        <div class="box-info-logs">
+            <div class="border-bottom table-responsive">
                 <table class="table table-hover align-middle">
                     <thead>
                         <tr>
@@ -181,17 +208,57 @@
                                 <td>{{ $log->user->real_name ?? 'N/A' }}</td>
                                 <td>{{ $log->action }}</td>
                                 <td>
+                                    @php
+                                        $metaData = is_string($log->meta) ? json_decode($log->meta, true) : (array) $log->meta;
+                                        $formatKey = function ($key) {
+                                            return ucfirst(str_replace(['_', '-'], ' ', $key));
+                                        };
+                                        $formatValue = function ($value) {
+                                            if (is_bool($value)) {
+                                                return $value ? '<span class="badge bg-success">Có</span>' : '<span class="badge bg-danger">Không</span>';
+                                            }
+                                            if (is_null($value) || $value === '') {
+                                                return '<em class="text-muted">N/A</em>';
+                                            }
+                                            if (is_array($value) || is_object($value)) {
+                                                $json = json_encode($value, JSON_UNESCAPED_UNICODE);
+                                                return '<span class="text-info" title="' . htmlentities($json) . '">Chi tiết (Hover)</span>';
+                                            }
+                                            return e($value);
+                                        };
+                                    @endphp
                                     <details>
-                                        <summary class="text-primary">Xem chi tiết</summary>
-                                        <pre
-                                            class="small bg-light p-2 rounded">{{ json_encode($log->meta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                                        <summary
+                                            style="background: #c1121f; color: #fdf0d5; border-radius: 20px; padding: 5px 15px;">
+                                            Xem chi tiết</summary>
+                                        <table class="table table-sm table-striped mb-0">
+                                            <tbody>
+                                                @if(is_array($metaData) && count($metaData) > 0)
+                                                    @foreach($metaData as $key => $value)
+                                                        <tr>
+                                                            <th class="text-nowrap" style="background: #fdf0d5; color: #c1121f;">
+                                                                {{ $formatKey($key) }}
+                                                            </th>
+                                                            <td style="color: #c1121f;">
+                                                                {!! $formatValue($value) !!}
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                @else
+                                                    <tr>
+                                                        <td colspan="2" class="text-center text-muted p-3">Không có dữ liệu chi tiết
+                                                            (meta)</td>
+                                                    </tr>
+                                                @endif
+                                            </tbody>
+                                        </table>
                                     </details>
                                 </td>
-                                <td><i class="far fa-clock me-1"></i>{{ $log->created_at->format('d/m/Y H:i') }}</td>
+                                <td><i class="far fa-clock me-1 text-info"></i>{{ $log->created_at->format('d/m/Y H:i') }}</td>
                             </tr>
                         </tbody>
                     @empty
-                        <p class="text-muted mb-0">Chưa có hoạt động nào được ghi nhận.</p>
+                        <p class="text-muted mb-0"></p>
                     @endforelse
                 </table>
             </div>
@@ -246,6 +313,19 @@
                 }
             });
         });
+
+        function toggleAllPasswords(checkbox) {
+            // Xác định type mới dựa trên trạng thái của checkbox
+            var newType = checkbox.checked ? 'text' : 'password';
+
+            // Tìm TẤT CẢ các input có class 'toggle-password'
+            var passwordFields = document.querySelectorAll('.toggle-password');
+
+            // Dùng vòng lặp để thay đổi type cho từng input
+            passwordFields.forEach(function (field) {
+                field.type = newType;
+            });
+        }
     </script>
 
 @endsection

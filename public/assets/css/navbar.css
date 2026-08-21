@@ -1,0 +1,108 @@
+.caprasimo-regular {
+    font-family: "Caprasimo", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.alfa-slab-one-regular {
+    font-family: "Alfa Slab One", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* 
+----
+----
+*/
+
+.nav-active-custom {
+    color: #ffffff !important;
+    font-weight: 700;
+    border-bottom: 2px solid #dc3545;
+    text-shadow: 0 0 20px #fff, 0 0 14px #dc3545, 0 0 15px #dc3545, 0 0 20px #dc3545, 0 0 25px #dc3545, 0 0 30px #dc3545;
+    background: rgba(255, 255, 255, 0.032);
+    border-radius: 50px !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.nav-link-custom {
+    text-decoration: none;
+    color: white;
+}
+
+.logo {
+    transition: all 0.3s ease;
+
+    &:hover {
+        scale: 1.1;
+    }
+}
+
+.nav-link-hover-cus {
+    transition: all 0.2s ease;
+}
+
+.nav-link-hover-cus:hover {
+    color: #fff;
+    scale: 1.05;
+    border-bottom: 2px solid #dc3545;
+    text-shadow: 0 0 20px #fff, 0 0 14px #dc3545, 0 0 15px #dc3545, 0 0 20px #dc3545, 0 0 25px #dc3545, 0 0 30px #dc3545;
+    background: rgba(255, 255, 255, 0.032);
+    border-radius: 50px !important;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.mobile-menu-toggle {
+    color: #dc3545 !important;
+}
+
+.main-nav-custom {
+    position: fixed;
+    /* top: 110px; */
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    background: rgba(130, 130, 130, 0.2);
+    border-radius: 45px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* 
+----
+----
+ */
+
+.main-nav {
+    display: none;
+}
+
+.nav-info {
+    background: #dc3545;
+    height: auto;
+    color: #fff;
+    padding: 10px;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+}
+
+@media (min-width: 768px) {
+    .main-nav-list {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-nav {
+        display: block;
+    }
+
+    .main-nav-custom {
+        display: none;
+    }
+}

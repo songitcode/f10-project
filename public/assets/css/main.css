@@ -19,10 +19,10 @@ body {
 
 /* Header Styles */
 .main-header {
-    background: #e02828;
+    /* background: #e02828; */
     background: linear-gradient(90deg, rgba(224, 40, 40, 1) 0%, rgba(255, 51, 51, 1) 35%, rgba(255, 110, 110, 0.5) 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -105,7 +105,7 @@ body {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
-.card-header {
+.profile-card-header {
     background: var(--gradient-primary);
     color: white;
     border-radius: 12px 12px 0 0 !important;
@@ -114,8 +114,13 @@ body {
     border: none;
 }
 
-.card-body {
-    padding: 20px;
+.card-header {
+    background: var(--gradient-primary);
+    color: white;
+    border-radius: 12px 12px 0 0 !important;
+    padding: 15px 20px;
+    font-weight: 600;
+    border: none;
 }
 
 /* Buttons */
@@ -152,6 +157,12 @@ body {
     border-radius: 12px;
     color: white;
     margin-bottom: 20px;
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
 }
 
 .stats-card i {

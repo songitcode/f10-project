@@ -1,29 +1,29 @@
-@push('style')
-    <link rel="stylesheet" href="{{ asset('assets/css/navbar.css') }}">
-@endpush
+<link rel="stylesheet" href="{{ asset('assets/css/navbar.css') }}">
 
 @auth
-    <!-- <! Header > -->
     <header class="main-header">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-                <div class="logo">
-                    <img src="{{ asset('assets/images/f10-auto-repair-logo.png') }}" alt="F10 Auto Repair Logo">
-                    <h4>F10 Auto Repair</h4>
-                </div>
+                <a href="{{ route('home') }}" class="nav-link-custom">
+                    <div class="logo">
+                        <img src="{{ asset('assets/images/f10-auto-repair-logo.png') }}" alt="F10 Auto Repair Logo">
+                        <h4 class="alfa-slab-one-regular" style="height: 20px">F10 Auto Repair</h4>
+                    </div>
+                </a>
                 <div class="user-info">
                     <span>Xin chào, {{ Auth::user()->position->name ?? '' }}
                         <strong>{{ Auth::user()->real_name ?? '-' }}</strong></span>
-                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->real_name) }}&background=random"
-                        class="rounded-circle me-2" alt="{{ Auth::user()->real_name }}" width="50" height="50">
+                    <a href="{{ route('profile') }}">
+                        <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->real_name) }}&background=random"
+                            class="rounded-circle me-2" alt="{{ Auth::user()->real_name }}" width="50" height="50">
+                    </a>
                     <div class="dropdown">
                         <button class="btn btn-light dropdown-toggle" type="button" id="userDropdown"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-cog"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal"><i
-                                        class="fas fa-user me-2"></i>Hồ sơ</a></li>
+                            <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i>Hồ sơ</a></li>
                             <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Cài đặt</a></li>
                             <li>
                                 <hr class="dropdown-divider">
@@ -43,54 +43,123 @@
             </div>
         </div>
     </header>
-
-    <!-- <! Navigation > -->
-    <nav class="main-nav">
+    @php
+        $users = \App\Models\User::whereIn('position_id', [1, 2])->take(10)->get(); // take() giới hạn số lượng người dùng hiển thị
+    @endphp
+    <div class="nav-info {{ $users ?? 'd-none' }} ">
         <div class="container">
-            <button class="mobile-menu-toggle d-md-none w-100 text-start p-3">
-                <i class="fas fa-bars me-2"></i>Menu
+            @foreach ($users as $user)
+                <small>
+                    <i class="fa-brands fa-discord"></i>
+                    {{ $user->position->name ?? '-' }}:
+                    <strong> {{ $user->momo ?? 0000 }} |HH| {{ $user->real_name ?? 'admin'}} |F10 </strong>
+                </small>
+            @endforeach
+        </div>
+    </div>
+    <!-- <! Navigation > -->
+    <nav class="main-nav bg-white shadow-sm border-bottom py-2">
+        <div class="container box-nav-menu justify-content-md-start">
+            <button class="mobile-menu-toggle d-md-none w-100 text-start btn btn-light border-0 px-3 py-2 text-primary"
+                type="button" data-bs-toggle="collapse" data-bs-target="#mainMenuContent" aria-controls="mainMenuContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars me-2"></i>MENU
             </button>
-            <ul class="nav nav-pills justify-content-center">
-                <li class="nav-item">
-                    <a class="nav-link {{ Request::is('home') ? 'active' : '' }}" href="{{ route('home') }}"
-                        data-tab="home">
-                        <i class="fas fa-home me-2"></i>Trang chủ
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ Request::is('bills*') ? 'active' : '' }}" href="{{ route('bills.index') }}">
-                        <i class="fas fa-file-invoice me-2"></i>Hóa đơn
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ Request::is('profile') ? 'active' : '' }}" href="{{ route(name: 'profile') }}">
-                        <i class="fas fa-user me-2"></i>Hồ sơ
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ Request::is('profile') ? 'active' : '' }}" href="{{ route(name: 'profile') }}">
-                        <i class="fas fa-user me-2"></i>Lịch làm việc
-                    </a>
-                </li>
-                {{--
-                <li class="nav-item">
-                    <a class="nav-link {{ Request::is('history') ? 'active' : '' }}" href="{{ route('history') }}">
-                        <i class="fas fa-history me-2"></i>Lịch sử
-                    </a>
-                </li>
-                --}}
-                <!-- Quản Lý -->
-                @if (Auth::user()->isManager())
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('admin.dashboard') }}">
-                            <i class="fas fa-cogs me-2"></i>Quản lý
+
+            <div class="collapse navbar-collapse d-md-flex justify-content-md-center" id="mainMenuContent">
+                <ul class="nav nav-pills main-nav-list flex-column flex-md-row">
+                    <li class="nav-item-custom">
+                        <a class="nav-link nav-link-hover-cus {{ Request::is('home') ? 'nav-active-custom' : '' }}"
+                            href="{{ route('home') }}" data-tab="home">
+                            <i class="fas fa-home me-2"></i>Trang chủ
                         </a>
                     </li>
-                @endif
-            </ul>
+
+                    <li class="nav-item-custom">
+                        <a class="nav-link nav-link-hover-cus {{ Request::is('bills*') ? 'nav-active-custom' : '' }}"
+                            href="{{ route('bills.index') }}">
+                            <i class="fas fa-file-invoice me-2"></i>Hóa đơn
+                        </a>
+                    </li>
+
+                    <li class="nav-item-custom">
+                        <a class="nav-link nav-link-hover-cus {{ Request::is('profile') ? 'nav-active-custom' : '' }}"
+                            href="{{ route('profile') }}">
+                            <i class="fas fa-user me-2"></i>Hồ sơ
+                        </a>
+                    </li>
+
+                    <li class="nav-item-custom">
+                        <a class="nav-link nav-link-hover-cus {{ Request::is('work-schedule') ? 'nav-active-custom' : '' }}"
+                            href="{{ route('work-schedule') }}">
+                            <i class="fa-solid fa-calendar-week me-2"></i>Lịch làm việc
+                        </a>
+                    </li>
+
+                    @if (Auth::user()->isManager())
+                        <li class="nav-item-custom">
+                            <a class="nav-link nav-link-hover-cus nav-link-admin {{ Request::is('admin*') ? 'active-admin' : '' }}"
+                                href="{{ route('admin.dashboard') }}" target="_blank">
+                                <i class="fas fa-cogs me-2"></i>Quản lý
+                            </a>
+                        </li>
+                    @endif
+                </ul>
+            </div>
         </div>
     </nav>
 
+    <!-- Navbar PC screen -->
+    <nav class="main-nav-custom py-2 ">
+        <div class="container box-nav-menu justify-content-md-start">
+            <button class="mobile-menu-toggle d-md-none w-100 text-start btn btn-light border-0 px-3 py-2 text-primary"
+                type="button" data-bs-toggle="collapse" data-bs-target="#mainMenuContent" aria-controls="mainMenuContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars me-2"></i>MENU
+            </button>
+
+            <div class="collapse navbar-collapse d-md-flex justify-content-md-center" id="mainMenuContent">
+                <ul class="nav nav-pills main-nav-list flex-column flex-md-row">
+                    <li class="nav-item-custom">
+                        <a class="nav-link nav-link-hover-cus {{ Request::is('home') ? 'nav-active-custom' : '' }}"
+                            href="{{ route('home') }}" data-tab="home">
+                            <i class="fas fa-home me-2"></i>Trang chủ
+                        </a>
+                    </li>
+
+                    <li class="nav-item-custom">
+                        <a class="nav-link nav-link-hover-cus {{ Request::is('bills*') ? 'nav-active-custom' : '' }}"
+                            href="{{ route('bills.index') }}">
+                            <i class="fas fa-file-invoice me-2"></i>Hóa đơn
+                        </a>
+                    </li>
+
+                    <li class="nav-item-custom">
+                        <a class="nav-link nav-link-hover-cus {{ Request::is('profile') ? 'nav-active-custom' : '' }}"
+                            href="{{ route('profile') }}">
+                            <i class="fas fa-user me-2"></i>Hồ sơ
+                        </a>
+                    </li>
+
+                    <li class="nav-item-custom">
+                        <a class="nav-link nav-link-hover-cus {{ Request::is('work-schedule') ? 'nav-active-custom' : '' }}"
+                            href="{{ route('work-schedule') }}">
+                            <i class="fa-solid fa-calendar-week me-2"></i>Lịch làm việc
+                        </a>
+                    </li>
+
+                    @if (Auth::user()->isManager())
+                        <li class="nav-item-custom">
+                            <a class="nav-link nav-link-hover-cus nav-link-admin {{ Request::is('admin*') ? 'active-admin' : '' }}"
+                                href="{{ route('admin.dashboard') }}">
+                                <i class="fas fa-cogs me-2"></i>Quản lý
+                            </a>
+                        </li>
+                    @endif
+                </ul>
+            </div>
+        </div>
+    </nav>
     <script>
         // // Xử lý chuyển tab (nếu không sử dụng Laravel routing)
         document.querySelectorAll('.nav-link').forEach(link => {
@@ -109,16 +178,20 @@
         });
 
         // Xử lý menu mobile
-        document.querySelector('.mobile-menu-toggle').addEventListener('click', function () {
-            document.querySelector('.nav-pills').classList.toggle('show');
+        const toggleButton = document.querySelector('.mobile-menu-toggle');
+        const menu = document.getElementById('mainMenuContent');
+
+        toggleButton.addEventListener('click', () => {
+            menu.classList.toggle('show');
         });
 
-        // Đóng menu mobile khi click ra ngoài
-        document.addEventListener('click', function (e) {
-            if (!e.target.closest('.main-nav') && window.innerWidth <= 768) {
-                document.querySelector('.nav-pills').classList.remove('show');
+        // Đóng menu khi click ra ngoài
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.main-header') && !e.target.closest('.main-nav')) {
+                menu.classList.remove('show');
             }
         });
+
     </script>
 @else
     {{-- <a href="{{ route('login') }}"></a> --}}

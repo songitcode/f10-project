@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\RepairBill;
+use App\Models\Voucher;
 use Illuminate\Http\Request;
 use App\Helpers\ActivityLogger;
 use Illuminate\Container\Attributes\Auth;
@@ -25,10 +26,11 @@ class EmployeeBillController extends Controller
     public function getBills($id)
     {
         $employee = User::with('position')->findOrFail($id);
-        $bills = RepairBill::where('user_id', $id)
+
+        $bills = RepairBill::with(['voucher', 'user'])
+            ->where('user_id', $id)
             ->orderByDesc('created_at')
             ->get();
-
         return response()->json([
             'employee' => $employee,
             'bills' => $bills,
@@ -38,7 +40,7 @@ class EmployeeBillController extends Controller
     // Xem chi tiết hóa đơn
     public function showBill($id)
     {
-        $bill = RepairBill::with('user')->findOrFail($id);
+        $bill = RepairBill::with(['voucher', 'user'])->findOrFail($id);
         return response()->json($bill);
     }
 
@@ -48,36 +50,57 @@ class EmployeeBillController extends Controller
 
         $validated = $request->validate([
             'vehicle_type' => 'required|string|max:255',
-            'license_plate' => 'nullable|string|max:255',
-            'customer_momo' => 'required|string|max:20',
-            'services' => 'nullable|array',
+            'customer_momo' => 'required|string|max:255',
             'total_amount' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,in_progress,completed,cancelled',
-            'notes' => 'nullable|string|max:500',
+            'services' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'status' => 'required|string|in:pending,in_progress,completed,cancelled',
         ]);
 
-        $user = $bill->user_id ? User::find($bill->user_id) : null;
-        $position = $user->position;
-        $percentage = $position->salary_percentage ?? 0;
-        $employeeEarnings = ($validated['total_amount'] * $percentage) / 100;
+        // Nếu có voucher ID hoặc code
+        if ($request->filled('voucher_id') || $request->filled('voucher_code')) {
+            $voucher = Voucher::where('id', $request->voucher_id)
+                ->orWhere('code', $request->voucher_code)
+                ->first();
+
+            if ($voucher && $voucher->isValid()) {
+                if ($voucher->discount_percent > 0) {
+                    $discount = ($validated['total_amount'] * $voucher->discount_percent) / 100;
+                } elseif ($voucher->discount_amount > 0) {
+                    $discount = $voucher->discount_amount;
+                } else {
+                    $discount = 0;
+                }
+            } else {
+                $voucher = null;
+                $discount = 0;
+            }
+        } else {
+            $voucher = null;
+            $discount = 0;
+        }
+
+        $finalAmount = max(0, $validated['total_amount'] - $discount);
+        $percentage = $bill->percentage ?? 0;
+        $earnings = ($finalAmount * $percentage) / 100;
 
         $bill->update([
             'vehicle_type' => $validated['vehicle_type'],
-            'license_plate' => $validated['license_plate'] ?? null,
             'customer_momo' => $validated['customer_momo'],
-            'services' => json_encode($validated['services'] ?? []),
             'total_amount' => $validated['total_amount'],
-            'employee_earnings' => $employeeEarnings,
+            'services' => $validated['services'],
+            'notes' => $validated['notes'],
             'status' => $validated['status'],
-            'notes' => $validated['notes'] ?? null,
+            'voucher_id' => $voucher?->id,
+            'discount_amount' => $discount,
+            'final_amount' => $finalAmount,
+            'employee_earnings' => $earnings,
         ]);
-
-        ActivityLogger::admin($request->user()->real_name . ' sửa hóa đơn ' . $bill->bill_code, $bill, $bill->toArray());
 
         return response()->json([
             'success' => true,
-            'message' => 'Cập nhật hóa đơn thành công!',
-            'bill' => $bill
+            'message' => 'Hóa đơn #' . $bill->bill_code . ' đã được cập nhật thành công!',
+            'bill' => $bill,
         ]);
     }
 

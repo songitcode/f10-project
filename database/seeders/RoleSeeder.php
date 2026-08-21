@@ -45,5 +45,6 @@ class RoleSeeder extends Seeder
         foreach ($roles as $role) {
             Role::create($role);
         }
+        $this->command->info('✅ Đã tạo dữ liệu mẫu cho bảng roles thành công!');
     }
 }

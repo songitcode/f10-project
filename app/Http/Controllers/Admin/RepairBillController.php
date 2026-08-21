@@ -14,7 +14,7 @@ class RepairBillController extends Controller
     public function index(Request $request)
     {
         // Lấy toàn bộ hóa đơn cùng nhân viên
-        $repairBills = RepairBill::with('user')
+        $repairBills = RepairBill::with(['voucher', 'user'])
             ->orderByDesc('created_at')
             ->get();
         $employees = User::active()->get();
@@ -24,7 +24,7 @@ class RepairBillController extends Controller
     public function show($id)
     {
         $bill = RepairBill::with('user')->findOrFail($id);
-        $services = json_decode($bill->services, true);
+        $services = $bill->services;
 
         return response()->json([
             'bill' => $bill,

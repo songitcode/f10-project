@@ -18,8 +18,12 @@ class RepairBill extends Model
         'services',
         'total_amount',
         'employee_earnings',
+        'percentage',
         'status',
         'notes',
+        'voucher_id',
+        'discount_amount',
+        'final_amount',
     ];
 
     /**
@@ -33,5 +37,10 @@ class RepairBill extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class);
     }
 }

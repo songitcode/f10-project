@@ -26,19 +26,19 @@ class EmployeeSeeder extends Seeder
         $this->command->info('👷‍♂️ Bắt đầu tạo dữ liệu nhân viên...');
 
         // Tạo danh sách 10 nhân viên mẫu
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 30; $i++) {
             $realName = fake()->name();
             $ingameName = 'Game_' . strtoupper(Str::random(5));
-            $email = 'employee' . $i . '@example.com';
+            $email = 'employee' . $i . '@f10auto.com';
 
             User::create([
                 'name' => 'employee' . $i,
                 'real_name' => $realName,
                 'ingame_name' => $ingameName,
-                'momo' => '09' . rand(10000000, 99999999),
+                'momo' => '09' . rand(10000, 99999),
                 'birthday' => Carbon::now()->subYears(rand(20, 35))->subDays(rand(1, 365)),
                 'start_date' => Carbon::now()->subDays(rand(5, 90)),
-                'position_id' => $positions->random()->id,
+                'position_id' => 6,
                 'is_active' => true,
                 'created_by' => 1, // ID admin tạo
                 'updated_by' => null,
@@ -51,6 +51,6 @@ class EmployeeSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('✅ Đã tạo 10 nhân viên mẫu thành công!');
+        $this->command->info('✅ Đã tạo ' . $i . ' nhân viên mẫu thành công!');
     }
 }

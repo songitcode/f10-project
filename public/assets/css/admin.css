@@ -13,6 +13,18 @@ body {
     color: #333;
 }
 
+.caprasimo-regular {
+    font-family: "Caprasimo", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.alfa-slab-one-regular {
+    font-family: "Alfa Slab One", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
 /* Mobile-first sidebar */
 .sidebar {
     background-color: var(--primary-color);

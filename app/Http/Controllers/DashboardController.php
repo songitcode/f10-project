@@ -9,8 +9,11 @@ use App\Models\Role;
 use App\Models\RepairBill;
 use App\Models\ActivityLog;
 use App\Models\EmployeeLog;
+use App\Models\WorkSchedule;
+use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -20,13 +23,16 @@ class DashboardController extends Controller
             'total_employees' => User::active()->count(),
             'new_employees' => User::where('start_date', '>=', now()->subMonth())->count(),
             'inactive_employees' => User::where('is_active', false)->count(),
+            'nhanVienDangHoatDong' => User::where('is_active', true)->count(),
             'total_bills' => RepairBill::count(),
             'total_positions' => Position::count(),
             'pending_bills' => RepairBill::where('status', 'pending')->count(),
             'completed_bills' => RepairBill::where('status', 'completed')->count(),
             'monthly_revenue' => RepairBill::whereMonth('created_at', now()->month)->sum('total_amount'),
+            'layThangHienTai' => Carbon::now()->format('m'),
         ];
 
+        // Example output for October: "10"
         $employees = User::with(['position.role'])
             ->select('users.*')
             ->addSelect([
@@ -49,9 +55,11 @@ class DashboardController extends Controller
             ->withCount(['repairBills as repair_bills_count'])
             ->select('users.*')
             ->addSelect([
+                // Tổng tiền hóa đơn (doanh thu)
                 'total_revenue' => RepairBill::select(DB::raw('SUM(total_amount)'))
                     ->whereColumn('user_id', 'users.id')
                     ->where('status', 'completed'),
+                // ✅ Tổng tiền thực thu của nhân viên
                 'total_earnings' => RepairBill::select(DB::raw('SUM(employee_earnings)'))
                     ->whereColumn('user_id', 'users.id')
                     ->where('status', 'completed')
@@ -85,7 +93,20 @@ class DashboardController extends Controller
         ];
         $logs = ActivityLog::with('user')->latest()->paginate(10);
         $logsUser = EmployeeLog::with('user')->latest()->paginate(10);
+        $schedules = WorkSchedule::with('user')->orderBy('work_date', 'desc')->get();
+        $usersWorkSchedule = User::orderBy('name')->get();
+        // Hiển thị lịch
+        $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
+        $endOfWeek = (clone $startOfWeek)->addDays(6); // Thứ 6
+        $schedules = WorkSchedule::with('user')
+            ->whereBetween('work_date', [$startOfWeek, $endOfWeek])
+            ->orderBy('work_date')
+            ->get();
+        $grouped = $schedules->groupBy('work_date');
 
+        // Các mốc giờ (0 → 23)
+        $hours = range(0, 23);
+        $vouchers = Voucher::with('creator')->get();
         return view('admin.dashboard', compact(
             'stats',
             'employees',
@@ -98,6 +119,13 @@ class DashboardController extends Controller
             'monthLabels',
             'logs',
             'logsUser',
+            'schedules',
+            'usersWorkSchedule',
+            'grouped',
+            'hours',
+            'startOfWeek',
+            'endOfWeek',
+            'vouchers',
         ));
     }
 }
